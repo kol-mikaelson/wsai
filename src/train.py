@@ -51,7 +51,9 @@ log = utils.get_pylogger(__name__)
 try:
     import horovod.torch as hvd
 except ImportError:
-    log.warning("Horovod is not installed. Horovod is required for distributed training.")
+    log.warning(
+        "Horovod is not installed. Horovod is required for distributed training."
+    )
 
 
 @utils.task_wrapper
@@ -94,10 +96,14 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
         logger.wandb.name = None
 
     log.info("Instantiating callbacks...")
-    callbacks: List[Callback] = utils.instantiate_callbacks(cfg.get("callbacks"), logger=logger)
+    callbacks: List[Callback] = utils.instantiate_callbacks(
+        cfg.get("callbacks"), logger=logger
+    )
 
     log.info(f"Instantiating trainer <{cfg.trainer._target_}>")
-    trainer: Trainer = hydra.utils.instantiate(cfg.trainer, callbacks=callbacks, logger=logger)
+    trainer: Trainer = hydra.utils.instantiate(
+        cfg.trainer, callbacks=callbacks, logger=logger
+    )
 
     object_dict = {
         "cfg": cfg,
@@ -150,7 +156,9 @@ def main(cfg: DictConfig) -> Optional[float]:
     metric_dict, _ = train(cfg)
 
     # safely retrieve metric value for hydra-based hyperparameter optimization
-    metric_value = utils.get_metric_value(metric_dict=metric_dict, metric_name=cfg.get("optimized_metric"))
+    metric_value = utils.get_metric_value(
+        metric_dict=metric_dict, metric_name=cfg.get("optimized_metric")
+    )
 
     # return optimized metric
     return metric_value

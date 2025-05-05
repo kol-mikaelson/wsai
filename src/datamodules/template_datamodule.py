@@ -132,7 +132,9 @@ if __name__ == "__main__":
     import pyrootutils
 
     root = pyrootutils.setup_root(__file__, pythonpath=True)
-    cfg = omegaconf.OmegaConf.load(root / "configs" / "datamodule" / "rotation_datamodule.yaml")
+    cfg = omegaconf.OmegaConf.load(
+        root / "configs" / "datamodule" / "rotation_datamodule.yaml"
+    )
     # cfg.data_dir = str(root / "data")
     print(cfg)
     data = hydra.utils.instantiate(cfg)

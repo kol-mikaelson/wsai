@@ -110,8 +110,12 @@ def task_wrapper(task_func: Callable) -> Callable:
             raise ex
         finally:
             path = Path(cfg.paths.output_dir, "exec_time.log")
-            content = f"'{cfg.task_name}' execution time: {time.time() - start_time} (s)"
-            save_file(path, content)  # save task execution time (even if exception occurs)
+            content = (
+                f"'{cfg.task_name}' execution time: {time.time() - start_time} (s)"
+            )
+            save_file(
+                path, content
+            )  # save task execution time (even if exception occurs)
             close_loggers()  # close loggers (even if exception occurs so multirun won't fail)
 
         log.info(f"Output dir: {cfg.paths.output_dir}")
@@ -221,8 +225,12 @@ def log_hyperparameters(object_dict: dict) -> None:
 
     # save number of model parameters
     hparams["model/params/total"] = sum(p.numel() for p in model.parameters())
-    hparams["model/params/trainable"] = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    hparams["model/params/non_trainable"] = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+    hparams["model/params/trainable"] = sum(
+        p.numel() for p in model.parameters() if p.requires_grad
+    )
+    hparams["model/params/non_trainable"] = sum(
+        p.numel() for p in model.parameters() if not p.requires_grad
+    )
 
     hparams["datamodule"] = cfg["datamodule"]
     hparams["trainer"] = cfg["trainer"]
@@ -294,7 +302,9 @@ def get_latest_checkpoint(folder_path):
         raise Exception(f"Folder not found! <folder_path={folder_path}>")
 
     for root, _, files in os.walk(folder_path):
-        checkpoints = [os.path.join(root, file) for file in files if file.endswith(".ckpt")]
+        checkpoints = [
+            os.path.join(root, file) for file in files if file.endswith(".ckpt")
+        ]
         if checkpoints:
             return max(checkpoints, key=os.path.getctime)
 
@@ -354,7 +364,9 @@ def configure_cfg_from_checkpoint(cfg):
         config = unflatten_config["model"]["net"]
         for k in cfg.model.net:
             if k in config and k not in ["_target_"]:
-                print(f"Overwriting {k}: {cfg.model.net[k]} with {config[k]} (type: {type(config[k])})")
+                print(
+                    f"Overwriting {k}: {cfg.model.net[k]} with {config[k]} (type: {type(config[k])})"
+                )
                 if config[k] == "None":
                     config[k] = None
                 cfg.model.net[k] = config[k]
@@ -391,7 +403,9 @@ def save_summary(model, save_path, logger):
         logger[0].experiment.save(save_path + "/model_summary.txt", policy="now")
 
 
-def log_videos(img_cond, img_pred, logger, audio=None, prefix="", fps=25, sample_rate=16000):
+def log_videos(
+    img_cond, img_pred, logger, audio=None, prefix="", fps=25, sample_rate=16000
+):
     repeat_cond = repeat(img_cond, "c h w -> t c h w", t=img_pred.shape[0])
     grid = torch.cat([repeat_cond, img_pred], dim=-1).cpu() * 255.0
     temp_video_path = "temp.mp4"
@@ -417,7 +431,12 @@ def log_videos(img_cond, img_pred, logger, audio=None, prefix="", fps=25, sample
 
 
 def save_audio_video(
-    video, audio=None, frame_rate=25, sample_rate=16000, save_path="temp.mp4", keep_intermediate=False
+    video,
+    audio=None,
+    frame_rate=25,
+    sample_rate=16000,
+    save_path="temp.mp4",
+    keep_intermediate=False,
 ):
     """Save audio and video to a single file.
     video: (t, c, h, w)
@@ -425,13 +444,17 @@ def save_audio_video(
     """
     save_path = str(save_path)
     try:
-        torchvision.io.write_video("temp_video.mp4", rearrange(video, "t c h w -> t h w c"), frame_rate)
+        torchvision.io.write_video(
+            "temp_video.mp4", rearrange(video, "t c h w -> t h w c"), frame_rate
+        )
         video_clip = mpy.VideoFileClip("temp_video.mp4")
         if audio is not None:
             torchaudio.save("temp_audio.wav", audio, sample_rate)
             audio_clip = mpy.AudioFileClip("temp_audio.wav")
             video_clip = video_clip.set_audio(audio_clip)
-        video_clip.write_videofile(save_path, fps=frame_rate, codec="libx264", audio_codec="aac")
+        video_clip.write_videofile(
+            save_path, fps=frame_rate, codec="libx264", audio_codec="aac"
+        )
         if not keep_intermediate:
             os.remove("temp_video.mp4")
             if audio is not None:

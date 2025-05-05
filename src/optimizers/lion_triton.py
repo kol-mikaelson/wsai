@@ -83,4 +83,6 @@ def update_fn(
 
     grid = lambda meta: (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)  # noqa: E731
 
-    update_fn_kernel[grid](p, grad, exp_avg, lr, wd, beta1, beta2, n_elements, BLOCK_SIZE=BLOCK_SIZE)
+    update_fn_kernel[grid](
+        p, grad, exp_avg, lr, wd, beta1, beta2, n_elements, BLOCK_SIZE=BLOCK_SIZE
+    )
